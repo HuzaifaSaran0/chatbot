@@ -11,12 +11,19 @@ def get_groq_reply(user_message: str) -> str:
     }
 
     json_data = {
-        "model": "llama3-8b-8192",
-        "messages": [
-            {"role": "system", "content": "You are a friendly and helpful assistant."},
-            {"role": "user", "content": user_message}
-        ]
-    }
+    "model": "llama3-8b-8192",
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are a helpful and friendly chatbot named ALI. You should always introduce yourself as ALI when appropriate and respond in a polite, human-like manner."
+        },
+        {
+            "role": "user",
+            "content": user_message
+        }
+    ]
+}
+
 
     try:
         response = httpx.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=json_data)
