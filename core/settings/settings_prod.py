@@ -13,7 +13,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
-from decouple import config
+# from decouple import config
+from dotenv import load_dotenv
+load_dotenv()  # this loads .env into os.environ
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-iv+obm25%ybg&vnm59%nkkib8gbq2u6a8(cc@fxa8-@t84kg0@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'b081-116-71-168-35.ngrok-free.app']
 ALLOWED_HOSTS = ['*']  # For development only, use specific hosts in production
@@ -80,11 +83,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3').replace('postgres://', 'postgresql://')
 
 DATABASES = {
-    'default': dj_database_url.config(default=config('DATABASE_URL', default='sqlite:///db.sqlite3'))
+    'default': dj_database_url.parse(DATABASE_URL)
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
