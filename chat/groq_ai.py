@@ -15,7 +15,7 @@ def get_groq_reply(user_message: str) -> str:
     "messages": [
         {
             "role": "system",
-            "content": "You are a helpful and friendly chatbot named ALI. You should always introduce yourself as ALI when appropriate and respond in a polite, human-like manner."
+            "content": "You are a helpful and friendly chatbot named Abdullah. You should always introduce yourself as Abdullah when appropriate and respond in a polite, human-like manner."
         },
         {
             "role": "user",
