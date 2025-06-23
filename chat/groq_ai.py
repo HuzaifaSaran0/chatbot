@@ -9,13 +9,27 @@ def get_groq_reply(user_message: str) -> str:
         "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
         "Content-Type": "application/json"
     }
+    pakistan_time = datetime.now(pytz.timezone('Asia/Karachi'))
+    formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
+    system_prompt = (
+            f"You are a friendly and helpful assistant. "
+            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- NEVER say you lack real-time access. "
+            f"Example good responses: "
+            f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
+            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
+            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+        )
+
 
     json_data = {
     "model": "llama3-8b-8192",
     "messages": [
         {
             "role": "system",
-            "content": "You are a helpful and friendly chatbot named Abdullah. You should always introduce yourself as Abdullah when appropriate and respond in a polite, human-like manner."
+            "content": system_prompt
         },
         {
             "role": "user",

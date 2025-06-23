@@ -10,6 +10,8 @@ import json
 import requests
 from rest_framework.permissions import AllowAny
 from chat.groq_ai import get_groq_reply
+import pytz
+from datetime import datetime
 
 
 
@@ -31,12 +33,25 @@ class ChatAPIView(APIView):
             "HTTP-Referer": "http://localhost",  # optional
             "X-Title": "ReactChatWithOpenRouter"
         }
+        # Get current time in Pakistan timezone
+        pakistan_time = datetime.now(pytz.timezone('Asia/Karachi'))
+        formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
+        system_prompt = (
+            f"You are a friendly and helpful assistant. "
+            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- NEVER say you lack real-time access. "
+            f"Example good responses: "
+            f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
+            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
+            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+        )  
 
         json_data = {
             "model": "deepseek/deepseek-r1-distill-llama-70b:free",
             "messages": [
-                # {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"Respond briefly in a friendly tone: {user_message}"},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ]
         }
@@ -66,11 +81,25 @@ class GroqChatAPIView(APIView):
             "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
             "Content-Type": "application/json"
         }
-
+        # Get current time in Pakistan timezone
+        pakistan_time = datetime.now(pytz.timezone('Asia/Karachi'))
+        formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
+        system_prompt = (
+            f"You are a friendly and helpful assistant. "
+            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- NEVER say you lack real-time access. "
+            f"Example good responses: "
+            f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
+            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
+            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+        )
+        
         json_data = {
                 "model": "llama3-8b-8192",  # Or another one listed above
             "messages": [
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ]
         }
@@ -100,11 +129,25 @@ class GroqChatTwoAPIView(APIView):
             "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}",
             "Content-Type": "application/json"
         }
+        # Get current time in Pakistan timezone
+        pakistan_time = datetime.now(pytz.timezone('Asia/Karachi'))
+        formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
+        system_prompt = (
+            f"You are a friendly and helpful assistant. "
+            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- NEVER say you lack real-time access. "
+            f"Example good responses: "
+            f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
+            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
+            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+        )
 
         json_data = {
                 "model": "llama3-70b-8192",  # Or another one listed above
             "messages": [
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
             ]
         }
