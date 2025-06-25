@@ -39,7 +39,7 @@ class ChatAPIView(APIView):
         system_prompt = (
             f"You are a friendly and helpful assistant. "
             f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
             f"- NEVER say you lack real-time access. "
             f"Example good responses: "
@@ -87,7 +87,7 @@ class GroqChatAPIView(APIView):
         system_prompt = (
             f"You are a friendly and helpful assistant. "
             f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
             f"- NEVER say you lack real-time access. "
             f"Example good responses: "
@@ -135,7 +135,7 @@ class GroqChatTwoAPIView(APIView):
         system_prompt = (
             f"You are a friendly and helpful assistant. "
             f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, ALWAYS use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
             f"- NEVER say you lack real-time access. "
             f"Example good responses: "
