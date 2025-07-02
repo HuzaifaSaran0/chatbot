@@ -38,15 +38,23 @@ class ChatAPIView(APIView):
         formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
         system_prompt = (
             f"You are a friendly and helpful assistant. "
-            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"Only mention the time or date when the user directly asks about it. "
+            f"- Do NOT include the time/date in general greetings or unrelated responses. "
+            f"- When the user asks about the time or date, respond naturally using the provided timestamp. "
+            f"- For time, respond like: 'It's 2:30 PM in Pakistan!' "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- If the user asks for **both date and time**, respond like: "
+            f"  'It's 2:30 PM on June 23, 2025 in Pakistan.' "
             f"- NEVER say you lack real-time access. "
-            f"Example good responses: "
+            f"Examples: "
             f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
-            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
-            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
-        )  
+            f"2. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+            f"3. User: 'What's the current date and time in Pakistan?' → 'It's 2:30 PM on June 23, 2025 in Pakistan.' "
+            f"4. User: 'Hey' → 'Hello! How can I help you today?' (❌ Do NOT mention time here)"
+        )
+
+
 
         json_data = {
             "model": "deepseek/deepseek-r1-distill-llama-70b:free",
@@ -86,15 +94,23 @@ class GroqChatAPIView(APIView):
         formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
         system_prompt = (
             f"You are a friendly and helpful assistant. "
-            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"Only mention the time or date when the user directly asks about it. "
+            f"- Do NOT include the time/date in general greetings or unrelated responses. "
+            f"- When the user asks about the time or date, respond naturally using the provided timestamp. "
+            f"- For time, respond like: 'It's 2:30 PM in Pakistan!' "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- If the user asks for **both date and time**, respond like: "
+            f"  'It's 2:30 PM on June 23, 2025 in Pakistan.' "
             f"- NEVER say you lack real-time access. "
-            f"Example good responses: "
+            f"Examples: "
             f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
-            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
-            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+            f"2. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+            f"3. User: 'What's the current date and time in Pakistan?' → 'It's 2:30 PM on June 23, 2025 in Pakistan.' "
+            f"4. User: 'Hey' → 'Hello! How can I help you today?' (❌ Do NOT mention time here)"
         )
+
+
         
         json_data = {
                 "model": "llama3-8b-8192",  # Or another one listed above
@@ -134,15 +150,22 @@ class GroqChatTwoAPIView(APIView):
         formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
         system_prompt = (
             f"You are a friendly and helpful assistant. "
-            f"IMPORTANT CONTEXT: The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
-            f"- When asked about time/date, use this timestamp but respond naturally (e.g., 'It's 2:30 PM' instead of raw numbers). "
+            f"The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
+            f"Only mention the time or date when the user directly asks about it. "
+            f"- Do NOT include the time/date in general greetings or unrelated responses. "
+            f"- When the user asks about the time or date, respond naturally using the provided timestamp. "
+            f"- For time, respond like: 'It's 2:30 PM in Pakistan!' "
             f"- For dates, use formats like 'June 23, 2025' or 'Monday, June 23rd'. "
+            f"- If the user asks for **both date and time**, respond like: "
+            f"  'It's 2:30 PM on June 23, 2025 in Pakistan.' "
             f"- NEVER say you lack real-time access. "
-            f"Example good responses: "
+            f"Examples: "
             f"1. User: 'What time is it?' → 'It's 2:08 PM in Pakistan!' "
-            f"2. User: 'Hey' → 'Hello! It's Monday afternoon here in Pakistan. How can I help?' "
-            f"3. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+            f"2. User: 'What's today's date?' → 'Today is June 23, 2025.' "
+            f"3. User: 'What's the current date and time in Pakistan?' → 'It's 2:30 PM on June 23, 2025 in Pakistan.' "
+            f"4. User: 'Hey' → 'Hello! How can I help you today?' (❌ Do NOT mention time here)"
         )
+
 
         json_data = {
                 "model": "llama3-70b-8192",  # Or another one listed above
