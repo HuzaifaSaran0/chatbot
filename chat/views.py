@@ -13,6 +13,18 @@ from chat.groq_ai import get_groq_reply
 import pytz
 from datetime import datetime
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Conversation, Message
+from django.shortcuts import get_object_or_404
+from django.utils.timesince import timesince
+
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
 
 
 # Load environment variables
@@ -20,22 +32,67 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def start_conversation(request):
+    conv = Conversation.objects.create(user=request.user)
+    return Response({"conversation_id": conv.id})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_conversations(request):
+    convs = Conversation.objects.filter(user=request.user).order_by('-started_at')
+    data = []
+    for c in convs:
+        started_display = c.started_at.strftime("%b %d, %Y %I:%M %p")  # Example: Jul 05, 2025 10:23 AM
+        data.append({
+            "id": c.id,
+            "started_at": c.started_at,
+            "title": f"Chat - {started_display}"
+        })
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_messages(request, conversation_id):
+    conv = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    msgs = conv.messages.order_by('timestamp')
+    data = [{"sender": m.sender, "content": m.content, "timestamp": m.timestamp} for m in msgs]
+    return Response(data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_conversation(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+    conversation.delete()
+    return Response({"message": "Conversation deleted successfully"})
+
+
+
 class ChatAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         user_message = request.data.get("message", "")
-        if not user_message:
-            return Response({"error": "No message provided"}, status=400)
+        conversation_id = request.data.get("conversation_id")
+        history = request.data.get("history", [])
+        if not user_message or not conversation_id:
+            return Response({"error": "Missing message or conversation_id"}, status=400)
+            # return Response({"error": "No message provided"}, status=400)
+        conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+        Message.objects.create(
+            conversation=conversation,
+            sender="user",
+            content=user_message
+        )
 
         logger.info(f"User message: {user_message}")
 
-        headers = {
-            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-            "HTTP-Referer": "http://localhost",  # optional
-            "X-Title": "ReactChatWithOpenRouter"
-        }
+
         # Get current time in Pakistan timezone
         pakistan_time = datetime.now(pytz.timezone('Asia/Karachi'))
         formatted_time = pakistan_time.strftime("%Y-%m-%d %H:%M:%S")
+
         system_prompt = (
             f"You are a friendly and helpful assistant. "
             f"The current exact timestamp in Pakistan (Asia/Karachi) is: {formatted_time}. "
@@ -53,21 +110,28 @@ class ChatAPIView(APIView):
             f"3. User: 'What's the current date and time in Pakistan?' → 'It's 2:30 PM on June 23, 2025 in Pakistan.' "
             f"4. User: 'Hey' → 'Hello! How can I help you today?' (❌ Do NOT mention time here)"
         )
-
-
+        
+        full_messages = [{"role": "system", "content": system_prompt}] + history
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "HTTP-Referer": "http://localhost",  # optional
+            "X-Title": "ReactChatWithOpenRouter"
+        }
 
         json_data = {
             "model": "deepseek/deepseek-r1-distill-llama-70b:free",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ]
+            "messages": full_messages
         }
 
         try:
             response = httpx.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=json_data)
             response.raise_for_status()
             reply = response.json()["choices"][0]["message"]["content"]
+            Message.objects.create(
+                conversation=conversation,
+                sender="bot",
+                content=reply.strip()
+            )
             return Response({"reply": reply.strip()})
         except httpx.HTTPStatusError as e:
             logger.error(f"❌ HTTP error: {str(e)}")
@@ -80,6 +144,7 @@ class ChatAPIView(APIView):
 class GroqChatAPIView(APIView):
     def post(self, request):
         user_message = request.data.get("message", "")
+        history = request.data.get("history", [])
         if not user_message:
             return Response({"error": "No message provided"}, status=400)
 
@@ -109,21 +174,24 @@ class GroqChatAPIView(APIView):
             f"3. User: 'What's the current date and time in Pakistan?' → 'It's 2:30 PM on June 23, 2025 in Pakistan.' "
             f"4. User: 'Hey' → 'Hello! How can I help you today?' (❌ Do NOT mention time here)"
         )
-
-
         
         json_data = {
                 "model": "llama3-8b-8192",  # Or another one listed above
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
-            ]
+            ] + history
         }
 
         try:
             response = httpx.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=json_data)
             response.raise_for_status()
             reply = response.json()["choices"][0]["message"]["content"]
+            conversation_id = request.data.get("conversation_id")
+            if conversation_id:
+                conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+                Message.objects.create(conversation=conversation, sender="user", content=user_message)
+                Message.objects.create(conversation=conversation, sender="bot", content=reply.strip())
             return Response({"reply": reply.strip()})
         except httpx.HTTPStatusError as e:
             logger.error(f"[GROQ] ❌ HTTP error: {str(e)}")
@@ -136,6 +204,7 @@ class GroqChatAPIView(APIView):
 class GroqChatTwoAPIView(APIView):
     def post(self, request):
         user_message = request.data.get("message", "")
+        history = request.data.get("history", [])
         if not user_message:
             return Response({"error": "No message provided"}, status=400)
 
@@ -172,13 +241,19 @@ class GroqChatTwoAPIView(APIView):
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message}
-            ]
+            ] + history
         }
 
         try:
             response = httpx.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=json_data)
             response.raise_for_status()
             reply = response.json()["choices"][0]["message"]["content"]
+            conversation_id = request.data.get("conversation_id")
+            if conversation_id:
+                conversation = get_object_or_404(Conversation, id=conversation_id, user=request.user)
+                Message.objects.create(conversation=conversation, sender="user", content=user_message)
+                Message.objects.create(conversation=conversation, sender="bot", content=reply.strip())
+
             return Response({"reply": reply.strip()})
         except httpx.HTTPStatusError as e:
             logger.error(f"[GROQ] ❌ HTTP error: {str(e)}")
@@ -240,8 +315,4 @@ class TelegramBotAPIView(APIView):
 
         return Response({"status": "ok"})
 
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
 
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
